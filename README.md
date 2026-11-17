@@ -1,57 +1,59 @@
-# Minhas Finanças — Dashboard Pessoal (React + Vite)
+# Minhas Finanças
 
-Um dashboard de controle financeiro pessoal limpo e intuitivo, inspirado no layout do **Nubank** em uma paleta **Preto & Branco** minimalista. Desenvolvido em **React + Vite** com armazenamento local (`localStorage`).
+Dashboard de finanças pessoais simples, inspirado no visual do Nubank, em preto e branco. Feito com **React + Vite**.
+
+🔗 **Acesse online:** https://imnotjean01.github.io/Minhas-financas/
 
 ---
 
 ## Funcionalidades
 
-- **Resumo Estilo Conta Digital**: Saldo disponível no mês, total de entradas, saídas e botões rápidos de ação.
-- **Modo Privacidade (Olhinho)**: Esconda ou mostre todos os valores da tela com um clique (`R$ ••••`).
-- **Cartão de Crédito & Caixinha**: Acompanhamento automático da fatura do mês (compras no crédito), limite disponível e reserva guardada na Caixinha.
-- **Personalização Completa**: Configure seu nome, renda fixa mensal, saldo guardado e limite do cartão.
-- **Limites por Categoria**: Defina metas de gastos para Mercado, Moradia, Lazer, Transporte, etc., e acompanhe a barra de progresso.
-- **Backup e Portabilidade**: Exporte ou importe seus dados em **CSV** ou **JSON** quando quiser.
+- **Resumo do mês**: saldo disponível, entradas, saídas e atalhos rápidos.
+- **Modo privacidade**: esconde todos os valores com um clique no ícone de olho (`R$ ••••`).
+- **Cartão de crédito e Caixinha**: fatura do mês calculada automaticamente a partir dos gastos no crédito, limite disponível e dinheiro guardado.
+- **Seus dados**: nome, renda fixa mensal, valor guardado e limite do cartão.
+- **Limites por categoria**: metas de gasto para mercado, moradia, lazer etc., com barra de progresso.
+- **Backup**: exporta e importa os dados em CSV ou JSON.
 
-> **Privacidade**: Todos os valores e lançamentos que você preenche ficam salvos **apenas no seu próprio navegador** (`localStorage`). Quando você publica o código no GitHub, seus dados pessoais **não** vão junto com o código.
+> **Privacidade:** tudo o que você preenche fica salvo só no seu navegador (`localStorage`). Nenhum dado é enviado para servidor nem para o GitHub.
 
 ---
 
-## Estrutura do Projeto
+## Estrutura
 
 ```text
+├── .github/workflows/
+│   └── deploy.yml            # Gera e publica o site no GitHub Pages a cada push
 ├── src/
 │   ├── components/
-│   │   ├── HeaderBar.jsx         # Topo preto com saudação, mês e modo privacidade
-│   │   ├── MetricsStrip.jsx      # Cards de Saldo, Cartão de Crédito e Caixinha
+│   │   ├── HeaderBar.jsx         # Topo com saudação, mês e modo privacidade
+│   │   ├── MetricsStrip.jsx      # Cards de saldo, cartão de crédito e caixinha
 │   │   ├── TransactionLedger.jsx # Histórico de movimentações com busca e filtros
-│   │   ├── BudgetPanel.jsx       # Controle de metas de gastos por categoria
-│   │   ├── TransactionModal.jsx  # Modal para registrar gastos ou receitas
-│   │   └── ProfileModal.jsx      # Configuração dos seus dados e backup CSV/JSON
-│   ├── data/
-│   │   └── constants.js          # Categorias e valores padrão iniciais
-│   ├── hooks/
-│   │   └── useLocalStorage.js    # Persistência automática no navegador
-│   ├── styles/
-│   │   └── index.css             # Estilização Preto & Branco inspirada no Nubank
-│   ├── utils/
-│   │   └── formatters.js         # Formatação em Real (R$), datas e CSV
+│   │   ├── BudgetPanel.jsx       # Limites de gasto por categoria
+│   │   ├── TransactionModal.jsx  # Formulário de gasto / receita
+│   │   └── ProfileModal.jsx      # Seus dados e backup CSV/JSON
+│   ├── data/constants.js         # Categorias e valores padrão
+│   ├── hooks/useLocalStorage.js  # Salvamento automático no navegador
+│   ├── styles/index.css          # Estilos
+│   ├── utils/formatters.js       # Formatação de R$, datas e CSV
 │   ├── App.jsx                   # Componente principal
 │   └── main.jsx                  # Inicialização do React
-├── index.html                    # Entrada padrão do Vite
-├── preview.html                  # Versão standalone pronta para abrir direto no navegador
-└── package.json                  # Dependências e scripts
+├── index.html
+├── package.json
+└── vite.config.js
 ```
 
 ---
 
-## Como Executar
+## Rodando no seu computador
 
-### 1. Abrir direto no navegador (Sem instalar nada)
-Basta abrir o arquivo `preview.html` em qualquer navegador.
+Precisa do [Node.js](https://nodejs.org/) (versão LTS).
 
-### 2. Rodando com Node.js + Vite
 ```bash
 npm install
 npm run dev
 ```
+
+## Publicação
+
+O site é publicado automaticamente pelo GitHub Actions: a cada `push` na branch `main`, o workflow roda `npm run build` e envia a pasta `dist` para o GitHub Pages.

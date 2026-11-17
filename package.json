@@ -1,8 +1,8 @@
 {
-  "name": "koda-finance",
+  "name": "minhas-financas",
   "private": true,
   "version": "1.0.0",
-  "description": "Personal finance ledger & budget tracker with a technical minimalist interface.",
+  "description": "Dashboard de finanças pessoais com interface minimalista preto e branco.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

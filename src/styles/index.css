@@ -6,12 +6,43 @@
   --gray-100: #f0f1f5;
   --gray-200: #e4e5e9;
   --gray-400: #9ca3af;
-  --gray-600: #666666;
+  --gray-600: #5c5f66;
   --green: #15803d;
+  --green-bg: #dcfce7;
+  --green-border: #bbf7d0;
   --red: #dc2626;
+  --red-bg: #fee2e2;
+  --red-border: #fecaca;
   --radius-lg: 20px;
   --radius-md: 14px;
   --radius-pill: 999px;
+
+  /* Escala ajustável de números (padrão: comfortable) */
+  --balance-font-size: 36px;
+  --flow-font-size: 22px;
+  --secondary-font-size: 24px;
+  --tx-amount-font-size: 16px;
+}
+
+.scale-normal {
+  --balance-font-size: 30px;
+  --flow-font-size: 18px;
+  --secondary-font-size: 20px;
+  --tx-amount-font-size: 15px;
+}
+
+.scale-comfortable {
+  --balance-font-size: 36px;
+  --flow-font-size: 22px;
+  --secondary-font-size: 24px;
+  --tx-amount-font-size: 16.5px;
+}
+
+.scale-large {
+  --balance-font-size: 42px;
+  --flow-font-size: 26px;
+  --secondary-font-size: 28px;
+  --tx-amount-font-size: 19px;
 }
 
 * {
@@ -48,7 +79,7 @@ button {
 }
 
 .nu-header-inner {
-  max-width: 920px;
+  max-width: 940px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -59,6 +90,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .nu-user-left {
@@ -68,17 +100,25 @@ button {
 }
 
 .nu-avatar {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: var(--black-soft);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: var(--white);
   font-weight: 600;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.nu-greeting-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .nu-greeting {
@@ -87,12 +127,24 @@ button {
   letter-spacing: -0.02em;
 }
 
+.nu-live-clock {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  background-color: var(--black-soft);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-variant-numeric: tabular-nums;
+}
+
 .nu-edit-profile-link {
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
   padding: 0;
+  margin-top: 2px;
 }
 
 .nu-edit-profile-link:hover {
@@ -133,12 +185,12 @@ button {
 .nu-month-pill {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background-color: var(--black-soft);
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: var(--radius-pill);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nu-month-pill button {
@@ -153,6 +205,13 @@ button {
 
 .nu-month-pill button:hover {
   opacity: 1;
+}
+
+.nu-top-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .nu-new-btn {
@@ -170,9 +229,14 @@ button {
   opacity: 0.92;
 }
 
+.nu-new-income-btn {
+  background-color: var(--green-bg);
+  color: var(--green);
+}
+
 /* Container Principal */
 .nu-container {
-  max-width: 920px;
+  max-width: 940px;
   margin: -14px auto 60px;
   padding: 0 20px;
   display: flex;
@@ -191,7 +255,7 @@ button {
 
 .nu-summary-section {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.45fr 1fr;
   gap: 16px;
 }
 
@@ -206,6 +270,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .nu-card-label {
@@ -223,55 +288,100 @@ button {
 }
 
 .nu-balance-value {
-  font-size: 32px;
+  font-size: var(--balance-font-size);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
 
-.nu-income-expense-row {
+.balance-negative {
+  color: var(--red);
+}
+
+/* Novos cards destacados de Recebimentos e Saídas */
+.nu-flow-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.nu-flow-box {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
   display: flex;
-  gap: 28px;
-  padding-top: 12px;
-  border-top: 1px solid var(--gray-100);
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s;
 }
 
-.nu-mini-stat {
+.nu-flow-box:hover {
+  transform: translateY(-2px);
+}
+
+.flow-income {
+  background-color: #f0fdf4;
+  border: 1px solid var(--green-border);
+}
+
+.flow-expense {
+  background-color: var(--bg-page);
+  border: 1px solid var(--gray-200);
+}
+
+.nu-flow-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 6px;
 }
 
-.nu-mini-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.nu-flow-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
 }
 
-.dot-in {
-  background-color: var(--black);
+.badge-in {
+  background-color: var(--green-bg);
+  color: var(--green);
 }
 
-.dot-out {
-  background-color: var(--gray-400);
+.badge-out {
+  background-color: var(--gray-200);
+  color: var(--black);
 }
 
-.nu-mini-label {
-  display: block;
-  font-size: 12px;
+.nu-flow-count {
+  font-size: 11px;
   color: var(--gray-600);
+  font-weight: 500;
 }
 
-.nu-mini-val {
-  font-size: 15px;
-  font-weight: 600;
+.nu-flow-amount {
+  font-size: var(--flow-font-size);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-in {
+  color: var(--green);
+}
+
+.amount-out {
+  color: var(--black);
 }
 
 /* Atalhos Redondos estilo Nubank */
 .nu-quick-actions {
   display: flex;
-  gap: 18px;
-  padding-top: 8px;
+  gap: 20px;
+  padding-top: 4px;
 }
 
 .nu-action-item {
@@ -285,8 +395,8 @@ button {
 }
 
 .nu-action-icon {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background-color: var(--gray-100);
   color: var(--black);
@@ -294,12 +404,17 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  font-weight: 600;
-  transition: background-color 0.15s;
+  font-weight: 700;
+  transition: background-color 0.15s, transform 0.12s;
+}
+
+.icon-action-in {
+  background-color: var(--green-bg);
+  color: var(--green);
 }
 
 .nu-action-item:hover .nu-action-icon {
-  background-color: var(--gray-200);
+  transform: scale(1.04);
 }
 
 .nu-action-text {
@@ -321,6 +436,7 @@ button {
   gap: 4px;
   cursor: pointer;
   transition: transform 0.12s;
+  flex: 1;
 }
 
 .nu-compact-card:hover {
@@ -339,15 +455,17 @@ button {
 }
 
 .nu-secondary-value {
-  font-size: 22px;
+  font-size: var(--secondary-font-size);
   font-weight: 700;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .nu-card-foot {
   font-size: 12px;
   color: var(--gray-600);
   margin-top: 4px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Seletor de Abas */
@@ -381,7 +499,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--gray-100);
   flex-wrap: wrap;
 }
@@ -411,7 +529,7 @@ button {
   border-radius: var(--radius-pill);
   font-size: 13px;
   outline: none;
-  width: 180px;
+  width: 190px;
 }
 
 .nu-search-input:focus {
@@ -429,7 +547,7 @@ button {
 .nu-pill-tabs button {
   background: transparent;
   border: none;
-  padding: 5px 12px;
+  padding: 6px 12px;
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
@@ -439,6 +557,85 @@ button {
 .nu-pill-tabs button.active {
   background-color: var(--black);
   color: var(--white);
+}
+
+/* Barra rápida de ajuste de Datas, Horas e Tamanho dos Números */
+.nu-display-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+}
+
+.nu-display-bar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.nu-display-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nu-chip-btn {
+  background-color: var(--bg-page);
+  border: 1px solid var(--gray-200);
+  color: var(--black);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  transition: border-color 0.12s, background-color 0.12s;
+}
+
+.nu-chip-btn:hover {
+  border-color: var(--black);
+}
+
+.nu-chip-btn.chip-active {
+  background-color: var(--gray-100);
+  border-color: var(--black);
+}
+
+/* Grupos de Data na Lista */
+.nu-date-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 16px;
+}
+
+.nu-date-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nu-date-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-page);
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.nu-date-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.nu-date-group-sum {
+  font-size: 12px;
+  color: var(--gray-600);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Itens da Lista */
@@ -452,14 +649,13 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  padding: 15px 6px;
   border-bottom: 1px solid var(--gray-100);
   gap: 12px;
 }
 
 .nu-tx-item:last-child {
   border-bottom: none;
-  padding-bottom: 0;
 }
 
 .nu-tx-left {
@@ -469,14 +665,14 @@ button {
 }
 
 .nu-tx-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 17px;
   flex-shrink: 0;
 }
 
@@ -486,19 +682,45 @@ button {
 }
 
 .icon-income {
-  background-color: #dcfce7;
+  background-color: var(--green-bg);
   color: var(--green);
 }
 
 .nu-tx-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.nu-tx-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .nu-tx-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--black);
+}
+
+.nu-type-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.02em;
+}
+
+.pill-in {
+  background-color: var(--green-bg);
+  color: var(--green);
+}
+
+.pill-out {
+  background-color: var(--gray-100);
+  color: var(--gray-600);
 }
 
 .nu-tx-meta {
@@ -516,20 +738,45 @@ button {
   text-align: right;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .nu-tx-amount {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--tx-amount-font-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .amount-positive {
   color: var(--green);
 }
 
-.nu-tx-date {
+.amount-expense {
+  color: var(--black);
+}
+
+.nu-tx-datetime {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   color: var(--gray-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.nu-dot-sep {
+  opacity: 0.6;
+}
+
+.nu-tx-time-badge {
+  background-color: var(--gray-100);
+  color: var(--black);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
 }
 
 .nu-tx-actions {
@@ -554,14 +801,14 @@ button {
 }
 
 .btn-del:hover {
-  background: #fee2e2;
+  background: var(--red-bg);
   color: var(--red);
 }
 
 /* Estado Vazio */
 .nu-empty-box {
   text-align: center;
-  padding: 48px 20px 28px;
+  padding: 44px 20px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -576,8 +823,15 @@ button {
 .nu-empty-desc {
   font-size: 14px;
   color: var(--gray-600);
-  max-width: 360px;
+  max-width: 380px;
   margin-bottom: 8px;
+}
+
+.nu-empty-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* Orçamentos (Limites) */
@@ -615,7 +869,9 @@ button {
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   font-size: 12px;
+  font-weight: 600;
   color: var(--gray-600);
+  font-variant-numeric: tabular-nums;
 }
 
 .nu-limit-edit-btn:hover {
@@ -624,11 +880,13 @@ button {
 }
 
 .nu-inline-input {
-  width: 90px;
+  width: 110px;
   padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid var(--black);
   font-size: 13px;
+  font-weight: 600;
+  text-align: right;
 }
 
 .nu-progress-track {
@@ -655,6 +913,7 @@ button {
   justify-content: space-between;
   font-size: 12px;
   color: var(--gray-600);
+  font-variant-numeric: tabular-nums;
 }
 
 .text-over {
@@ -666,28 +925,35 @@ button {
 .nu-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.52);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   z-index: 100;
+  overflow-y: auto;
 }
 
 .nu-modal-sheet {
   background-color: var(--white);
   width: 100%;
-  max-width: 460px;
+  max-width: 470px;
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.nu-modal-sheet-wide {
+  max-width: 520px;
 }
 
 .nu-modal-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .nu-modal-top h3 {
@@ -710,7 +976,7 @@ button {
 .nu-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 15px;
 }
 
 .nu-segment {
@@ -724,16 +990,157 @@ button {
 .nu-segment button {
   background: transparent;
   border: none;
-  padding: 8px;
+  padding: 9px;
   border-radius: var(--radius-pill);
   font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+
+.nu-segment button.active-in {
+  background-color: var(--green);
+  color: var(--white);
+}
+
+.nu-segment button.active-out {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+/* Destaque do Valor no Modal */
+.nu-amount-hero {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-income {
+  background-color: #f0fdf4;
+  border: 1px solid var(--green-border);
+}
+
+.hero-expense {
+  background-color: var(--bg-page);
+  border: 1px solid var(--gray-200);
+}
+
+.nu-hero-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nu-currency-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nu-currency-prefix {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+.hero-income .nu-currency-prefix {
+  color: var(--green);
+}
+
+.nu-big-input {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  padding: 0 !important;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--black);
+}
+
+.hero-income .nu-big-input {
+  color: var(--green);
+}
+
+.nu-clear-val-btn {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
   font-weight: 600;
   color: var(--gray-600);
 }
 
-.nu-segment button.active {
-  background-color: var(--black);
-  color: var(--white);
+.nu-quick-amounts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.nu-quick-val-chip {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--black);
+  transition: border-color 0.12s, transform 0.1s;
+}
+
+.nu-quick-val-chip:hover {
+  border-color: var(--black);
+  transform: translateY(-1px);
+}
+
+/* Bloco de Data e Hora no Modal */
+.nu-datetime-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--bg-page);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+}
+
+.nu-datetime-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nu-datetime-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.nu-date-shortcuts {
+  display: flex;
+  gap: 6px;
+}
+
+.nu-mini-chip {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.nu-mini-chip:hover {
+  border-color: var(--black);
 }
 
 .nu-field {
@@ -750,23 +1157,23 @@ button {
 
 .nu-field input,
 .nu-field select {
-  padding: 11px 14px;
+  padding: 10px 13px;
   border-radius: var(--radius-md);
   border: 1px solid var(--gray-200);
   background-color: var(--bg-page);
   font-size: 14px;
   outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.nu-datetime-block .nu-field input {
+  background-color: var(--white);
 }
 
 .nu-field input:focus,
 .nu-field select:focus {
   border-color: var(--black);
   background-color: var(--white);
-}
-
-.nu-big-input {
-  font-size: 22px !important;
-  font-weight: 700;
 }
 
 .nu-field-hint {
@@ -780,6 +1187,7 @@ button {
   gap: 12px;
 }
 
+.nu-prefs-box,
 .nu-data-box {
   border-top: 1px solid var(--gray-100);
   padding-top: 14px;
@@ -790,8 +1198,19 @@ button {
 
 .nu-data-title {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nu-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .nu-data-buttons {
@@ -804,11 +1223,21 @@ button {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .nu-btn-dark {
   background-color: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nu-btn-income {
+  background-color: var(--green);
   color: var(--white);
   border: none;
   padding: 11px 20px;
@@ -829,7 +1258,7 @@ button {
 
 .nu-btn-danger-outline {
   background: transparent;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--red-border);
   color: var(--red);
   padding: 10px 16px;
   border-radius: var(--radius-pill);
@@ -839,6 +1268,9 @@ button {
 
 @media (max-width: 760px) {
   .nu-summary-section {
+    grid-template-columns: 1fr;
+  }
+  .nu-flow-cards {
     grid-template-columns: 1fr;
   }
   .nu-budget-grid {

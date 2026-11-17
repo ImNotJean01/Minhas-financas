@@ -43,7 +43,11 @@ export default function App() {
   const monthTransactions = useMemo(() => {
     return transactions
       .filter((tx) => tx.date && tx.date.startsWith(selectedMonth))
-      .sort((a, b) => b.date.localeCompare(a.date));
+      .sort((a, b) => {
+        const cmpDate = b.date.localeCompare(a.date);
+        if (cmpDate !== 0) return cmpDate;
+        return (b.time || '00:00').localeCompare(a.time || '00:00');
+      });
   }, [transactions, selectedMonth]);
 
   const visibleTransactions = useMemo(() => {
@@ -59,21 +63,35 @@ export default function App() {
     });
   }, [monthTransactions, typeFilter, searchQuery]);
 
-  const { totalIncome, totalExpense, creditCardSpent } = useMemo(() => {
+  const {
+    totalIncome,
+    totalExpense,
+    incomeCount,
+    expenseCount,
+    creditCardSpent,
+  } = useMemo(() => {
     return monthTransactions.reduce(
       (acc, tx) => {
         const val = Number(tx.amount) || 0;
         if (tx.type === 'income') {
           acc.totalIncome += val;
+          acc.incomeCount += 1;
         } else {
           acc.totalExpense += val;
+          acc.expenseCount += 1;
           if (tx.method === 'credito') {
             acc.creditCardSpent += val;
           }
         }
         return acc;
       },
-      { totalIncome: 0, totalExpense: 0, creditCardSpent: 0 }
+      {
+        totalIncome: 0,
+        totalExpense: 0,
+        incomeCount: 0,
+        expenseCount: 0,
+        creditCardSpent: 0,
+      }
     );
   }, [monthTransactions]);
 
@@ -166,8 +184,10 @@ export default function App() {
     }
   };
 
+  const scaleClass = `scale-${profile.numberScale || 'comfortable'}`;
+
   return (
-    <div className="nu-app">
+    <div className={`nu-app ${scaleClass}`}>
       <HeaderBar
         profile={profile}
         onToggleHideValues={() =>
@@ -183,6 +203,8 @@ export default function App() {
         <MetricsStrip
           income={totalIncome}
           expense={totalExpense}
+          incomeCount={incomeCount}
+          expenseCount={expenseCount}
           creditCardSpent={creditCardSpent}
           profile={profile}
           onOpenNewModal={handleOpenNewModal}
@@ -210,7 +232,8 @@ export default function App() {
         {activeTab === 'transactions' ? (
           <TransactionLedger
             transactions={visibleTransactions}
-            hideValues={profile.hideValues}
+            profile={profile}
+            onUpdateProfile={setProfile}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             typeFilter={typeFilter}

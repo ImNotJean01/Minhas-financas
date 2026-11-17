@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatMonthLabel, shiftYearMonth } from '../utils/formatters';
 
 export function HeaderBar({
@@ -9,6 +9,15 @@ export function HeaderBar({
   onSelectMonth,
   onOpenNewModal,
 }) {
+  const [liveClock, setLiveClock] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveClock(new Date());
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   const initials = (profile.name || 'J')
     .trim()
     .split(' ')
@@ -16,6 +25,16 @@ export function HeaderBar({
     .join('')
     .slice(0, 2)
     .toUpperCase();
+
+  const currentDayStr = liveClock.toLocaleDateString('pt-BR', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  });
+  const currentTimeStr = liveClock.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
     <header className="nu-header">
@@ -26,18 +45,23 @@ export function HeaderBar({
               type="button"
               className="nu-avatar"
               onClick={onOpenProfileModal}
-              title="Editar minhas informações"
+              title="Editar minhas informações e formatos"
             >
               {initials}
             </button>
             <div>
-              <h1 className="nu-greeting">Olá, {profile.name || 'Jean'}</h1>
+              <div className="nu-greeting-line">
+                <h1 className="nu-greeting">Olá, {profile.name || 'Jean'}</h1>
+                <span className="nu-live-clock" title="Data e horário atuais">
+                  {currentDayStr} · {currentTimeStr}
+                </span>
+              </div>
               <button
                 type="button"
                 className="nu-edit-profile-link"
                 onClick={onOpenProfileModal}
               >
-                Configurar meus dados ›
+                Ajustar meus dados, datas e tamanhos ›
               </button>
             </div>
           </div>
@@ -67,7 +91,7 @@ export function HeaderBar({
               type="button"
               className="nu-circle-btn"
               onClick={onOpenProfileModal}
-              title="Meus dados e backup"
+              title="Meus dados e preferências de exibição"
               aria-label="Configurações e dados"
             >
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -84,6 +108,7 @@ export function HeaderBar({
               type="button"
               onClick={() => onSelectMonth(shiftYearMonth(selectedMonth, -1))}
               aria-label="Mês anterior"
+              title="Mês anterior"
             >
               ‹
             </button>
@@ -92,18 +117,28 @@ export function HeaderBar({
               type="button"
               onClick={() => onSelectMonth(shiftYearMonth(selectedMonth, 1))}
               aria-label="Próximo mês"
+              title="Próximo mês"
             >
               ›
             </button>
           </div>
 
-          <button
-            type="button"
-            className="nu-new-btn"
-            onClick={() => onOpenNewModal('expense')}
-          >
-            + Nova movimentação
-          </button>
+          <div className="nu-top-cta-group">
+            <button
+              type="button"
+              className="nu-new-btn nu-new-income-btn"
+              onClick={() => onOpenNewModal('income')}
+            >
+              + Recebimento
+            </button>
+            <button
+              type="button"
+              className="nu-new-btn"
+              onClick={() => onOpenNewModal('expense')}
+            >
+              - Nova saída
+            </button>
+          </div>
         </div>
       </div>
     </header>

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { DEFAULT_CATEGORIES } from '../data/constants';
-import { formatCurrency } from '../utils/formatters';
+import {
+  formatCurrency,
+  formatCurrencyInput,
+  parseCurrencyInput,
+  numberToCurrencyInput,
+} from '../utils/formatters';
 
 export function BudgetPanel({
   transactions,
@@ -9,7 +14,7 @@ export function BudgetPanel({
   onUpdateBudget,
 }) {
   const [editingCatId, setEditingCatId] = useState(null);
-  const [draftLimit, setDraftLimit] = useState('');
+  const [draftFormatted, setDraftFormatted] = useState('');
 
   const expenseCategories = DEFAULT_CATEGORIES.filter(
     (c) => c.type === 'expense'
@@ -24,8 +29,8 @@ export function BudgetPanel({
   });
 
   const commitEdit = (catId) => {
-    const parsed = parseFloat(draftLimit.replace(',', '.'));
-    if (!Number.isNaN(parsed) && parsed >= 0) {
+    const parsed = parseCurrencyInput(draftFormatted);
+    if (parsed >= 0) {
       onUpdateBudget(catId, parsed);
     }
     setEditingCatId(null);
@@ -37,7 +42,7 @@ export function BudgetPanel({
         <div>
           <h2 className="nu-section-title">Meus limites por categoria</h2>
           <p className="nu-section-sub">
-            Clique no valor limite de qualquer categoria para ajustar sua meta
+            Clique no valor da meta de qualquer categoria para ajustar seu limite
           </p>
         </div>
       </div>
@@ -55,11 +60,15 @@ export function BudgetPanel({
                 <strong className="nu-budget-name">{cat.label}</strong>
                 {editingCatId === cat.id ? (
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     className="nu-inline-input"
-                    value={draftLimit}
+                    value={draftFormatted}
+                    placeholder="0,00"
                     autoFocus
-                    onChange={(e) => setDraftLimit(e.target.value)}
+                    onChange={(e) =>
+                      setDraftFormatted(formatCurrencyInput(e.target.value))
+                    }
                     onBlur={() => commitEdit(cat.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') commitEdit(cat.id);
@@ -72,7 +81,7 @@ export function BudgetPanel({
                     className="nu-limit-edit-btn"
                     onClick={() => {
                       setEditingCatId(cat.id);
-                      setDraftLimit(String(limit));
+                      setDraftFormatted(numberToCurrencyInput(limit));
                     }}
                   >
                     Meta: {formatCurrency(limit, hideValues)} ✎
@@ -88,11 +97,13 @@ export function BudgetPanel({
               </div>
 
               <div className="nu-budget-foot">
-                <span>Gasto: {formatCurrency(spent, hideValues)}</span>
+                <span>
+                  Saídas: <strong>{formatCurrency(spent, hideValues)}</strong>
+                </span>
                 <span className={isOver ? 'text-over' : ''}>
                   {isOver
                     ? `Passou ${formatCurrency(spent - limit, hideValues)}`
-                    : `Disponível ${formatCurrency(
+                    : `Livre ${formatCurrency(
                         Math.max(0, limit - spent),
                         hideValues
                       )}`}

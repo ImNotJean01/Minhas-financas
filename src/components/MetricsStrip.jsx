@@ -4,6 +4,8 @@ import { formatCurrency } from '../utils/formatters';
 export function MetricsStrip({
   income,
   expense,
+  incomeCount,
+  expenseCount,
   creditCardSpent,
   profile,
   onOpenNewModal,
@@ -17,7 +19,7 @@ export function MetricsStrip({
 
   return (
     <section className="nu-summary-section">
-      {/* Card Principal: Conta */}
+      {/* Card Principal: Conta e Números de Recebimento / Saída */}
       <div className="nu-card nu-account-card">
         <div className="nu-card-top">
           <span className="nu-card-label">Saldo disponível no mês</span>
@@ -26,29 +28,46 @@ export function MetricsStrip({
           )}
         </div>
 
-        <div className="nu-balance-value">
+        <div
+          className={`nu-balance-value ${
+            balance < 0 ? 'balance-negative' : ''
+          }`}
+        >
           {formatCurrency(balance, hide)}
         </div>
 
-        <div className="nu-income-expense-row">
-          <div className="nu-mini-stat">
-            <span className="nu-mini-dot dot-in" />
-            <div>
-              <span className="nu-mini-label">Entradas</span>
-              <strong className="nu-mini-val">
-                {formatCurrency(baseIncome, hide)}
-              </strong>
+        {/* Blocos destacados de Recebimentos (Entradas) e Saídas (Gastos) */}
+        <div className="nu-flow-cards">
+          <div
+            className="nu-flow-box flow-income"
+            onClick={() => onOpenNewModal('income')}
+            role="button"
+            tabIndex={0}
+            title="Clique para adicionar um recebimento"
+          >
+            <div className="nu-flow-header">
+              <span className="nu-flow-badge badge-in">↓ RECEBIMENTOS</span>
+              <span className="nu-flow-count">{incomeCount} no mês</span>
             </div>
+            <strong className="nu-flow-amount amount-in">
+              + {formatCurrency(baseIncome, hide)}
+            </strong>
           </div>
 
-          <div className="nu-mini-stat">
-            <span className="nu-mini-dot dot-out" />
-            <div>
-              <span className="nu-mini-label">Saídas</span>
-              <strong className="nu-mini-val">
-                {formatCurrency(expense, hide)}
-              </strong>
+          <div
+            className="nu-flow-box flow-expense"
+            onClick={() => onOpenNewModal('expense')}
+            role="button"
+            tabIndex={0}
+            title="Clique para registrar uma saída"
+          >
+            <div className="nu-flow-header">
+              <span className="nu-flow-badge badge-out">↑ SAÍDAS</span>
+              <span className="nu-flow-count">{expenseCount} no mês</span>
             </div>
+            <strong className="nu-flow-amount amount-out">
+              - {formatCurrency(expense, hide)}
+            </strong>
           </div>
         </div>
 
@@ -57,19 +76,19 @@ export function MetricsStrip({
           <button
             type="button"
             className="nu-action-item"
-            onClick={() => onOpenNewModal('expense')}
+            onClick={() => onOpenNewModal('income')}
           >
-            <span className="nu-action-icon">↑</span>
-            <span className="nu-action-text">Registrar gasto</span>
+            <span className="nu-action-icon icon-action-in">↓</span>
+            <span className="nu-action-text">Novo recebimento</span>
           </button>
 
           <button
             type="button"
             className="nu-action-item"
-            onClick={() => onOpenNewModal('income')}
+            onClick={() => onOpenNewModal('expense')}
           >
-            <span className="nu-action-icon">↓</span>
-            <span className="nu-action-text">Receber valor</span>
+            <span className="nu-action-icon icon-action-out">↑</span>
+            <span className="nu-action-text">Nova saída</span>
           </button>
 
           <button
@@ -78,14 +97,19 @@ export function MetricsStrip({
             onClick={onOpenProfileModal}
           >
             <span className="nu-action-icon">◎</span>
-            <span className="nu-action-text">Caixinha / Renda</span>
+            <span className="nu-action-text">Ajustar formatos</span>
           </button>
         </div>
       </div>
 
       {/* Cards Secundários: Cartão de Crédito + Caixinha */}
       <div className="nu-side-cards">
-        <div className="nu-card nu-compact-card" onClick={onOpenProfileModal} role="button" tabIndex={0}>
+        <div
+          className="nu-card nu-compact-card"
+          onClick={onOpenProfileModal}
+          role="button"
+          tabIndex={0}
+        >
           <div className="nu-card-top">
             <span className="nu-card-label">Cartão de crédito</span>
             <span className="nu-chevron">›</span>
@@ -99,7 +123,12 @@ export function MetricsStrip({
           </span>
         </div>
 
-        <div className="nu-card nu-compact-card" onClick={onOpenProfileModal} role="button" tabIndex={0}>
+        <div
+          className="nu-card nu-compact-card"
+          onClick={onOpenProfileModal}
+          role="button"
+          tabIndex={0}
+        >
           <div className="nu-card-top">
             <span className="nu-card-label">Dinheiro guardado (Caixinha)</span>
             <span className="nu-chevron">›</span>

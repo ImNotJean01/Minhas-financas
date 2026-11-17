@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  formatCurrencyInput,
+  parseCurrencyInput,
+  numberToCurrencyInput,
+} from '../utils/formatters';
 
 export function ProfileModal({
   isOpen,
@@ -11,17 +16,28 @@ export function ProfileModal({
   onClearAllData,
 }) {
   const [name, setName] = useState('');
-  const [monthlyIncomeGoal, setMonthlyIncomeGoal] = useState('');
-  const [savingsBox, setSavingsBox] = useState('');
-  const [creditCardLimit, setCreditCardLimit] = useState('');
+  const [monthlyIncomeFormatted, setMonthlyIncomeFormatted] = useState('');
+  const [savingsFormatted, setSavingsFormatted] = useState('');
+  const [cardLimitFormatted, setCardLimitFormatted] = useState('');
+  const [dateFormat, setDateFormat] = useState('relative');
+  const [showTime, setShowTime] = useState(true);
+  const [numberScale, setNumberScale] = useState('comfortable');
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setName(profile.name || 'Jean');
-      setMonthlyIncomeGoal(String(profile.monthlyIncomeGoal ?? 0));
-      setSavingsBox(String(profile.savingsBox ?? 0));
-      setCreditCardLimit(String(profile.creditCardLimit ?? 2500));
+      setMonthlyIncomeFormatted(
+        numberToCurrencyInput(profile.monthlyIncomeGoal)
+      );
+      setSavingsFormatted(numberToCurrencyInput(profile.savingsBox));
+      setCardLimitFormatted(
+        numberToCurrencyInput(profile.creditCardLimit ?? 2500)
+      );
+      setDateFormat(profile.dateFormat || 'relative');
+      setShowTime(profile.showTime !== false);
+      setNumberScale(profile.numberScale || 'comfortable');
     }
   }, [isOpen, profile]);
 
@@ -32,9 +48,12 @@ export function ProfileModal({
     onSaveProfile({
       ...profile,
       name: name.trim() || 'Jean',
-      monthlyIncomeGoal: parseFloat(monthlyIncomeGoal) || 0,
-      savingsBox: parseFloat(savingsBox) || 0,
-      creditCardLimit: parseFloat(creditCardLimit) || 0,
+      monthlyIncomeGoal: parseCurrencyInput(monthlyIncomeFormatted),
+      savingsBox: parseCurrencyInput(savingsFormatted),
+      creditCardLimit: parseCurrencyInput(cardLimitFormatted),
+      dateFormat,
+      showTime,
+      numberScale,
     });
     onClose();
   };
@@ -42,13 +61,13 @@ export function ProfileModal({
   return (
     <div className="nu-modal-backdrop" onClick={onClose}>
       <div
-        className="nu-modal-sheet"
+        className="nu-modal-sheet nu-modal-sheet-wide"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         <div className="nu-modal-top">
-          <h3>Minhas informações</h3>
+          <h3>Meus dados e formato dos números</h3>
           <button type="button" className="nu-close-x" onClick={onClose}>
             ×
           </button>
@@ -69,15 +88,16 @@ export function ProfileModal({
           <div className="nu-field">
             <label>Sua renda fixa / salário mensal (R$)</label>
             <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={monthlyIncomeGoal}
-              onChange={(e) => setMonthlyIncomeGoal(e.target.value)}
+              type="text"
+              inputMode="numeric"
+              value={monthlyIncomeFormatted}
+              onChange={(e) =>
+                setMonthlyIncomeFormatted(formatCurrencyInput(e.target.value))
+              }
               placeholder="0,00"
             />
             <small className="nu-field-hint">
-              Se você ainda não tiver lançado entradas no mês, usamos esse valor para calcular seu saldo.
+              Digite os números normalmente (ex: 350000 vira 3.500,00).
             </small>
           </div>
 
@@ -85,11 +105,12 @@ export function ProfileModal({
             <div className="nu-field">
               <label>Dinheiro guardado / Caixinha (R$)</label>
               <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={savingsBox}
-                onChange={(e) => setSavingsBox(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                value={savingsFormatted}
+                onChange={(e) =>
+                  setSavingsFormatted(formatCurrencyInput(e.target.value))
+                }
                 placeholder="0,00"
               />
             </div>
@@ -97,14 +118,59 @@ export function ProfileModal({
             <div className="nu-field">
               <label>Limite do cartão de crédito (R$)</label>
               <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={creditCardLimit}
-                onChange={(e) => setCreditCardLimit(e.target.value)}
-                placeholder="2500,00"
+                type="text"
+                inputMode="numeric"
+                value={cardLimitFormatted}
+                onChange={(e) =>
+                  setCardLimitFormatted(formatCurrencyInput(e.target.value))
+                }
+                placeholder="2.500,00"
               />
             </div>
+          </div>
+
+          {/* Preferências de Datas, Horas e Tamanho dos Números */}
+          <div className="nu-prefs-box">
+            <span className="nu-data-title">
+              Aparência de datas, horas e números
+            </span>
+
+            <div className="nu-row-2">
+              <div className="nu-field">
+                <label>Modelo de data</label>
+                <select
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                >
+                  <option value="relative">
+                    Inteligente (Hoje, Ontem, Seg, 17 nov)
+                  </option>
+                  <option value="numeric">Numérico (17/11/2026)</option>
+                  <option value="short">Por extenso (17 de nov. de 2026)</option>
+                </select>
+              </div>
+
+              <div className="nu-field">
+                <label>Tamanho dos números</label>
+                <select
+                  value={numberScale}
+                  onChange={(e) => setNumberScale(e.target.value)}
+                >
+                  <option value="normal">Compacto</option>
+                  <option value="comfortable">Médio (Recomendado)</option>
+                  <option value="large">Grande e bem aparente</option>
+                </select>
+              </div>
+            </div>
+
+            <label className="nu-checkbox-row">
+              <input
+                type="checkbox"
+                checked={showTime}
+                onChange={(e) => setShowTime(e.target.checked)}
+              />
+              <span>Mostrar o horário (ex: 14:30h) em cada movimentação</span>
+            </label>
           </div>
 
           <div className="nu-data-box">
@@ -130,10 +196,18 @@ export function ProfileModal({
               >
                 Importar CSV/JSON
               </button>
-              <button type="button" className="nu-btn-light" onClick={onExportCSV}>
+              <button
+                type="button"
+                className="nu-btn-light"
+                onClick={onExportCSV}
+              >
                 Baixar CSV
               </button>
-              <button type="button" className="nu-btn-light" onClick={onExportJSON}>
+              <button
+                type="button"
+                className="nu-btn-light"
+                onClick={onExportJSON}
+              >
                 Backup JSON
               </button>
               <button
@@ -151,7 +225,7 @@ export function ProfileModal({
               Fechar
             </button>
             <button type="submit" className="nu-btn-dark">
-              Salvar meus dados
+              Salvar configurações
             </button>
           </div>
         </form>

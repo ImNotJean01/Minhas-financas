@@ -1,0 +1,850 @@
+:root {
+  --black: #111111;
+  --black-soft: #1f1f1f;
+  --white: #ffffff;
+  --bg-page: #f5f5f7;
+  --gray-100: #f0f1f5;
+  --gray-200: #e4e5e9;
+  --gray-400: #9ca3af;
+  --gray-600: #666666;
+  --green: #15803d;
+  --red: #dc2626;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: var(--bg-page);
+  color: var(--black);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Header Preto estilo Nubank */
+.nu-header {
+  background-color: var(--black);
+  color: var(--white);
+  padding: 28px 20px 32px;
+}
+
+.nu-header-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.nu-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nu-user-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nu-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: var(--black-soft);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nu-greeting {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.nu-edit-profile-link {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  padding: 0;
+}
+
+.nu-edit-profile-link:hover {
+  color: var(--white);
+}
+
+.nu-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nu-circle-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--black-soft);
+  border: none;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.nu-circle-btn:hover {
+  background-color: #2e2e2e;
+}
+
+.nu-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nu-month-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--black-soft);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nu-month-pill button {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: 0.75;
+}
+
+.nu-month-pill button:hover {
+  opacity: 1;
+}
+
+.nu-new-btn {
+  background-color: var(--white);
+  color: var(--black);
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.12s, opacity 0.12s;
+}
+
+.nu-new-btn:hover {
+  opacity: 0.92;
+}
+
+/* Container Principal */
+.nu-container {
+  max-width: 920px;
+  margin: -14px auto 60px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Cards brancos limpos */
+.nu-card {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.nu-summary-section {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 16px;
+}
+
+.nu-account-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.nu-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nu-card-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.nu-subtle-badge {
+  font-size: 12px;
+  background-color: var(--gray-100);
+  color: var(--gray-600);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.nu-balance-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--black);
+}
+
+.nu-income-expense-row {
+  display: flex;
+  gap: 28px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.nu-mini-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nu-mini-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-in {
+  background-color: var(--black);
+}
+
+.dot-out {
+  background-color: var(--gray-400);
+}
+
+.nu-mini-label {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.nu-mini-val {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Atalhos Redondos estilo Nubank */
+.nu-quick-actions {
+  display: flex;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.nu-action-item {
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.nu-action-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: var(--gray-100);
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  transition: background-color 0.15s;
+}
+
+.nu-action-item:hover .nu-action-icon {
+  background-color: var(--gray-200);
+}
+
+.nu-action-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+/* Cards laterais (Cartão e Caixinha) */
+.nu-side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nu-compact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+
+.nu-compact-card:hover {
+  transform: translateY(-2px);
+}
+
+.nu-chevron {
+  font-size: 20px;
+  color: var(--gray-400);
+}
+
+.nu-card-sub {
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-top: 4px;
+}
+
+.nu-secondary-value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.nu-card-foot {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin-top: 4px;
+}
+
+/* Seletor de Abas */
+.nu-view-switcher {
+  display: inline-flex;
+  background-color: var(--gray-200);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  align-self: flex-start;
+}
+
+.nu-view-switcher button {
+  background: transparent;
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.nu-view-switcher button.active {
+  background-color: var(--white);
+  color: var(--black);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Card de Lista de Movimentações */
+.nu-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+}
+
+.nu-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.nu-section-sub {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.nu-list-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nu-search-input {
+  background-color: var(--gray-100);
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  outline: none;
+  width: 180px;
+}
+
+.nu-search-input:focus {
+  background-color: var(--white);
+  border-color: var(--black);
+}
+
+.nu-pill-tabs {
+  display: flex;
+  background-color: var(--gray-100);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.nu-pill-tabs button {
+  background: transparent;
+  border: none;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.nu-pill-tabs button.active {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+/* Itens da Lista */
+.nu-tx-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.nu-tx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gray-100);
+  gap: 12px;
+}
+
+.nu-tx-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nu-tx-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nu-tx-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.icon-expense {
+  background-color: var(--gray-100);
+  color: var(--black);
+}
+
+.icon-income {
+  background-color: #dcfce7;
+  color: var(--green);
+}
+
+.nu-tx-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.nu-tx-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.nu-tx-meta {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.nu-tx-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nu-tx-amount-col {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.nu-tx-amount {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.amount-positive {
+  color: var(--green);
+}
+
+.nu-tx-date {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.nu-tx-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nu-text-btn {
+  background: var(--gray-100);
+  border: none;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-600);
+}
+
+.nu-text-btn:hover {
+  background: var(--gray-200);
+  color: var(--black);
+}
+
+.btn-del:hover {
+  background: #fee2e2;
+  color: var(--red);
+}
+
+/* Estado Vazio */
+.nu-empty-box {
+  text-align: center;
+  padding: 48px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.nu-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nu-empty-desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  max-width: 360px;
+  margin-bottom: 8px;
+}
+
+/* Orçamentos (Limites) */
+.nu-budget-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding-top: 20px;
+}
+
+.nu-budget-card {
+  background-color: var(--bg-page);
+  padding: 18px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nu-budget-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nu-budget-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nu-limit-edit-btn {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.nu-limit-edit-btn:hover {
+  border-color: var(--black);
+  color: var(--black);
+}
+
+.nu-inline-input {
+  width: 90px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--black);
+  font-size: 13px;
+}
+
+.nu-progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--gray-200);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.nu-progress-fill {
+  height: 100%;
+  background-color: var(--black);
+  border-radius: var(--radius-pill);
+  transition: width 0.25s ease;
+}
+
+.nu-progress-fill.fill-over {
+  background-color: var(--red);
+}
+
+.nu-budget-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.text-over {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* Modais Limpos */
+.nu-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.nu-modal-sheet {
+  background-color: var(--white);
+  width: 100%;
+  max-width: 460px;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.nu-modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.nu-modal-top h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.nu-close-x {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  border: none;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nu-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--gray-100);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+}
+
+.nu-segment button {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.nu-segment button.active {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.nu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nu-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.nu-field input,
+.nu-field select {
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  background-color: var(--bg-page);
+  font-size: 14px;
+  outline: none;
+}
+
+.nu-field input:focus,
+.nu-field select:focus {
+  border-color: var(--black);
+  background-color: var(--white);
+}
+
+.nu-big-input {
+  font-size: 22px !important;
+  font-weight: 700;
+}
+
+.nu-field-hint {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.nu-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.nu-data-box {
+  border-top: 1px solid var(--gray-100);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nu-data-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.nu-data-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nu-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.nu-btn-dark {
+  background-color: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nu-btn-light {
+  background-color: var(--gray-100);
+  color: var(--black);
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nu-btn-danger-outline {
+  background: transparent;
+  border: 1px solid #fecaca;
+  color: var(--red);
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .nu-summary-section {
+    grid-template-columns: 1fr;
+  }
+  .nu-budget-grid {
+    grid-template-columns: 1fr;
+  }
+  .nu-row-2 {
+    grid-template-columns: 1fr;
+  }
+}

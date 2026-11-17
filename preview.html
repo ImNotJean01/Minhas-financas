@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minhas Finanças</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles/index.css" />
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useMemo, useRef } = React;
+
+      const DEFAULT_CATEGORIES = [
+        { id: 'moradia', label: 'Moradia', type: 'expense', defaultLimit: 1800 },
+        { id: 'mercado', label: 'Mercado', type: 'expense', defaultLimit: 900 },
+        { id: 'alimentacao', label: 'Restaurantes & Delivery', type: 'expense', defaultLimit: 450 },
+        { id: 'transporte', label: 'Transporte', type: 'expense', defaultLimit: 400 },
+        { id: 'assinaturas', label: 'Assinaturas & Contas', type: 'expense', defaultLimit: 250 },
+        { id: 'saude', label: 'Saúde & Farmácia', type: 'expense', defaultLimit: 300 },
+        { id: 'lazer', label: 'Lazer & Compras', type: 'expense', defaultLimit: 500 },
+        { id: 'outros_saida', label: 'Outros gastos', type: 'expense', defaultLimit: 300 },
+        { id: 'salario', label: 'Salário', type: 'income', defaultLimit: 0 },
+        { id: 'extra', label: 'Renda Extra / Freelance', type: 'income', defaultLimit: 0 },
+        { id: 'rendimentos', label: 'Rendimentos', type: 'income', defaultLimit: 0 },
+      ];
+
+      const PAYMENT_METHODS = [
+        { id: 'pix', label: 'Pix' },
+        { id: 'credito', label: 'Cartão de crédito' },
+        { id: 'debito', label: 'Cartão de débito' },
+        { id: 'boleto', label: 'Boleto / Conta' },
+        { id: 'dinheiro', label: 'Dinheiro' },
+      ];
+
+      const brlFormatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+
+      const formatCurrency = (val, hidden = false) =>
+        hidden ? 'R$ ••••' : brlFormatter.format(Number(val) || 0);
+
+      const formatFriendlyDate = (isoDate) => {
+        if (!isoDate) return '';
+        const parts = isoDate.split('-').map(Number);
+        if (parts.length !== 3) return isoDate;
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+      };
+
+      const getCurrentYearMonth = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      };
+
+      const formatMonthLabel = (ym) => {
+        const [y, m] = ym.split('-').map(Number);
+        const s = new Date(y, m - 1, 1).toLocaleDateString('pt-BR', {
+          month: 'long',
+          year: 'numeric',
+        });
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      };
+
+      const shiftYearMonth = (ym, delta) => {
+        const [y, m] = ym.split('-').map(Number);
+        const d = new Date(y, m - 1 + delta, 1);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      };
+
+      const generateDefaultProfile = () => ({
+        name: 'Jean',
+        monthlyIncomeGoal: 0,
+        savingsBox: 0,
+        creditCardLimit: 2500,
+        hideValues: false,
+      });
+
+      const generateDefaultBudgets = () => {
+        const map = {};
+        DEFAULT_CATEGORIES.forEach((c) => {
+          if (c.type === 'expense') map[c.id] = c.defaultLimit;
+        });
+        return map;
+      };
+
+      function useLocalStorage(key, initialValue) {
+        const [storedValue, setStoredValue] = useState(() => {
+          try {
+            const item = window.localStorage.getItem(key);
+            if (item) return JSON.parse(item);
+            const val = typeof initialValue === 'function' ? initialValue() : initialValue;
+            window.localStorage.setItem(key, JSON.stringify(val));
+            return val;
+          } catch {
+            return typeof initialValue === 'function' ? initialValue() : initialValue;
+          }
+        });
+
+        useEffect(() => {
+          try {
+            window.localStorage.setItem(key, JSON.stringify(storedValue));
+          } catch {}
+        }, [key, storedValue]);
+
+        return [storedValue, setStoredValue];
+      }
+
+      function App() {
+        const [profile, setProfile] = useLocalStorage('nu_bw_profile_v1', generateDefaultProfile);
+        const [transactions, setTransactions] = useLocalStorage('nu_bw_transactions_v1', []);
+        const [budgets, setBudgets] = useLocalStorage('nu_bw_budgets_v1', generateDefaultBudgets);
+
+        const [selectedMonth, setSelectedMonth] = useState(getCurrentYearMonth);
+        const [activeTab, setActiveTab] = useState('transactions');
+        const [searchQuery, setSearchQuery] = useState('');
+        const [typeFilter, setTypeFilter] = useState('all');
+
+        const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+        const [editingTx, setEditingTx] = useState(null);
+        const [formType, setFormType] = useState('expense');
+        const [formDesc, setFormDesc] = useState('');
+        const [formAmount, setFormAmount] = useState('');
+        const [formDate, setFormDate] = useState('');
+        const [formCat, setFormCat] = useState('mercado');
+        const [formMethod, setFormMethod] = useState('pix');
+        const [formNotes, setFormNotes] = useState('');
+
+        const [isProfileOpen, setIsProfileOpen] = useState(false);
+        const [profName, setProfName] = useState('');
+        const [profIncome, setProfIncome] = useState('');
+        const [profSavings, setProfSavings] = useState('');
+        const [profCardLimit, setProfCardLimit] = useState('');
+
+        const [editingCatId, setEditingCatId] = useState(null);
+        const [draftLimit, setDraftLimit] = useState('');
+
+        const monthTransactions = useMemo(
+          () =>
+            transactions
+              .filter((t) => t.date && t.date.startsWith(selectedMonth))
+              .sort((a, b) => b.date.localeCompare(a.date)),
+          [transactions, selectedMonth]
+        );
+
+        const visibleTransactions = useMemo(
+          () =>
+            monthTransactions.filter((t) => {
+              if (typeFilter !== 'all' && t.type !== typeFilter) return false;
+              if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                return (
+                  t.description?.toLowerCase().includes(q) ||
+                  t.notes?.toLowerCase().includes(q)
+                );
+              }
+              return true;
+            }),
+          [monthTransactions, typeFilter, searchQuery]
+        );
+
+        const { income, expense, cardSpent } = useMemo(
+          () =>
+            monthTransactions.reduce(
+              (acc, t) => {
+                const v = Number(t.amount) || 0;
+                if (t.type === 'income') acc.income += v;
+                else {
+                  acc.expense += v;
+                  if (t.method === 'credito') acc.cardSpent += v;
+                }
+                return acc;
+              },
+              { income: 0, expense: 0, cardSpent: 0 }
+            ),
+          [monthTransactions]
+        );
+
+        const openTxModal = (initialType = 'expense', tx = null) => {
+          setEditingTx(tx);
+          if (tx) {
+            setFormType(tx.type);
+            setFormDesc(tx.description);
+            setFormAmount(String(tx.amount));
+            setFormDate(tx.date);
+            setFormCat(tx.category);
+            setFormMethod(tx.method || 'pix');
+            setFormNotes(tx.notes || '');
+          } else {
+            const today = new Date().toISOString().slice(0, 10);
+            setFormType(initialType);
+            setFormDesc('');
+            setFormAmount('');
+            setFormDate(today.startsWith(selectedMonth) ? today : `${selectedMonth}-01`);
+            setFormCat(initialType === 'income' ? 'salario' : 'mercado');
+            setFormMethod('pix');
+            setFormNotes('');
+          }
+          setIsTxModalOpen(true);
+        };
+
+        const openProfileModal = () => {
+          setProfName(profile.name || 'Jean');
+          setProfIncome(String(profile.monthlyIncomeGoal ?? 0));
+          setProfSavings(String(profile.savingsBox ?? 0));
+          setProfCardLimit(String(profile.creditCardLimit ?? 2500));
+          setIsProfileOpen(true);
+        };
+
+        const handleSaveTx = (e) => {
+          e.preventDefault();
+          const num = parseFloat(String(formAmount).replace(',', '.'));
+          if (!formDesc.trim() || Number.isNaN(num) || num <= 0) return;
+          const payload = {
+            id: editingTx ? editingTx.id : `tx-${Date.now()}`,
+            type: formType,
+            description: formDesc.trim(),
+            amount: num,
+            date: formDate,
+            category: formCat,
+            method: formMethod,
+            notes: formNotes.trim(),
+          };
+          setTransactions((prev) =>
+            editingTx
+              ? prev.map((i) => (i.id === payload.id ? payload : i))
+              : [payload, ...prev]
+          );
+          setIsTxModalOpen(false);
+        };
+
+        const handleSaveProfile = (e) => {
+          e.preventDefault();
+          setProfile({
+            ...profile,
+            name: profName.trim() || 'Jean',
+            monthlyIncomeGoal: parseFloat(profIncome) || 0,
+            savingsBox: parseFloat(profSavings) || 0,
+            creditCardLimit: parseFloat(profCardLimit) || 0,
+          });
+          setIsProfileOpen(false);
+        };
+
+        const hide = profile.hideValues;
+        const baseIncome = income > 0 ? income : Number(profile.monthlyIncomeGoal) || 0;
+        const balance = baseIncome - expense;
+        const availableCard = Math.max(0, (Number(profile.creditCardLimit) || 0) - cardSpent);
+
+        const categoryMap = Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.id, c]));
+        const methodMap = Object.fromEntries(PAYMENT_METHODS.map((m) => [m.id, m.label]));
+
+        const initials = (profile.name || 'J')
+          .trim()
+          .split(' ')
+          .map((p) => p[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase();
+
+        return (
+          <div className="nu-app">
+            <header className="nu-header">
+              <div className="nu-header-inner">
+                <div className="nu-user-row">
+                  <div className="nu-user-left">
+                    <button className="nu-avatar" onClick={openProfileModal}>
+                      {initials}
+                    </button>
+                    <div>
+                      <h1 className="nu-greeting">Olá, {profile.name || 'Jean'}</h1>
+                      <button className="nu-edit-profile-link" onClick={openProfileModal}>
+                        Configurar meus dados ›
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="nu-header-actions">
+                    <button
+                      className="nu-circle-btn"
+                      onClick={() => setProfile((p) => ({ ...p, hideValues: !p.hideValues }))}
+                      title="Mostrar / Ocultar valores"
+                    >
+                      {hide ? '🙈' : '👁'}
+                    </button>
+                    <button
+                      className="nu-circle-btn"
+                      onClick={openProfileModal}
+                      title="Meus dados"
+                    >
+                      ⚙
+                    </button>
+                  </div>
+                </div>
+
+                <div className="nu-subbar">
+                  <div className="nu-month-pill">
+                    <button onClick={() => setSelectedMonth(shiftYearMonth(selectedMonth, -1))}>‹</button>
+                    <span>{formatMonthLabel(selectedMonth)}</span>
+                    <button onClick={() => setSelectedMonth(shiftYearMonth(selectedMonth, 1))}>›</button>
+                  </div>
+
+                  <button className="nu-new-btn" onClick={() => openTxModal('expense')}>
+                    + Nova movimentação
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main className="nu-container">
+              <section className="nu-summary-section">
+                <div className="nu-card nu-account-card">
+                  <div className="nu-card-top">
+                    <span className="nu-card-label">Saldo disponível no mês</span>
+                    {income === 0 && profile.monthlyIncomeGoal > 0 && (
+                      <span className="nu-subtle-badge">Baseado na sua renda fixa</span>
+                    )}
+                  </div>
+
+                  <div className="nu-balance-value">{formatCurrency(balance, hide)}</div>
+
+                  <div className="nu-income-expense-row">
+                    <div className="nu-mini-stat">
+                      <span className="nu-mini-dot dot-in" />
+                      <div>
+                        <span className="nu-mini-label">Entradas</span>
+                        <strong className="nu-mini-val">{formatCurrency(baseIncome, hide)}</strong>
+                      </div>
+                    </div>
+                    <div className="nu-mini-stat">
+                      <span className="nu-mini-dot dot-out" />
+                      <div>
+                        <span className="nu-mini-label">Saídas</span>
+                        <strong className="nu-mini-val">{formatCurrency(expense, hide)}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="nu-quick-actions">
+                    <button className="nu-action-item" onClick={() => openTxModal('expense')}>
+                      <span className="nu-action-icon">↑</span>
+                      <span className="nu-action-text">Registrar gasto</span>
+                    </button>
+                    <button className="nu-action-item" onClick={() => openTxModal('income')}>
+                      <span className="nu-action-icon">↓</span>
+                      <span className="nu-action-text">Receber valor</span>
+                    </button>
+                    <button className="nu-action-item" onClick={openProfileModal}>
+                      <span className="nu-action-icon">◎</span>
+                      <span className="nu-action-text">Caixinha / Renda</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="nu-side-cards">
+                  <div className="nu-card nu-compact-card" onClick={openProfileModal}>
+                    <div className="nu-card-top">
+                      <span className="nu-card-label">Cartão de crédito</span>
+                      <span className="nu-chevron">›</span>
+                    </div>
+                    <span className="nu-card-sub">Fatura atual</span>
+                    <strong className="nu-secondary-value">{formatCurrency(cardSpent, hide)}</strong>
+                    <span className="nu-card-foot">
+                      Limite disponível de {formatCurrency(availableCard, hide)}
+                    </span>
+                  </div>
+
+                  <div className="nu-card nu-compact-card" onClick={openProfileModal}>
+                    <div className="nu-card-top">
+                      <span className="nu-card-label">Dinheiro guardado (Caixinha)</span>
+                      <span className="nu-chevron">›</span>
+                    </div>
+                    <span className="nu-card-sub">Reserva pessoal</span>
+                    <strong className="nu-secondary-value">
+                      {formatCurrency(profile.savingsBox || 0, hide)}
+                    </strong>
+                    <span className="nu-card-foot">Clique para atualizar seu saldo guardado</span>
+                  </div>
+                </div>
+              </section>
+
+              <div className="nu-view-switcher">
+                <button
+                  className={activeTab === 'transactions' ? 'active' : ''}
+                  onClick={() => setActiveTab('transactions')}
+                >
+                  Movimentações ({monthTransactions.length})
+                </button>
+                <button
+                  className={activeTab === 'budgets' ? 'active' : ''}
+                  onClick={() => setActiveTab('budgets')}
+                >
+                  Limites por categoria
+                </button>
+              </div>
+
+              {activeTab === 'transactions' ? (
+                <section className="nu-card nu-list-card">
+                  <div className="nu-list-header">
+                    <div>
+                      <h2 className="nu-section-title">Histórico de movimentações</h2>
+                      <p className="nu-section-sub">Tudo o que entrou e saiu neste mês</p>
+                    </div>
+
+                    <div className="nu-list-filters">
+                      <input
+                        type="text"
+                        className="nu-search-input"
+                        placeholder="Buscar..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      <div className="nu-pill-tabs">
+                        <button className={typeFilter === 'all' ? 'active' : ''} onClick={() => setTypeFilter('all')}>Tudo</button>
+                        <button className={typeFilter === 'expense' ? 'active' : ''} onClick={() => setTypeFilter('expense')}>Saídas</button>
+                        <button className={typeFilter === 'income' ? 'active' : ''} onClick={() => setTypeFilter('income')}>Entradas</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {visibleTransactions.length === 0 ? (
+                    <div className="nu-empty-box">
+                      <p className="nu-empty-title">Nenhuma movimentação registrada ainda</p>
+                      <p className="nu-empty-desc">
+                        Comece adicionando suas contas, compras ou seu salário do mês.
+                      </p>
+                      <button className="nu-btn-dark" onClick={() => openTxModal('expense')}>
+                        + Adicionar primeiro lançamento
+                      </button>
+                    </div>
+                  ) : (
+                    <ul className="nu-tx-list">
+                      {visibleTransactions.map((tx) => {
+                        const cat = categoryMap[tx.category] || { label: tx.category };
+                        const isInc = tx.type === 'income';
+                        return (
+                          <li key={tx.id} className="nu-tx-item">
+                            <div className="nu-tx-left">
+                              <div className={`nu-tx-icon ${isInc ? 'icon-income' : 'icon-expense'}`}>
+                                {isInc ? '↓' : '↑'}
+                              </div>
+                              <div className="nu-tx-info">
+                                <strong className="nu-tx-title">{tx.description}</strong>
+                                <span className="nu-tx-meta">
+                                  {cat.label} · {methodMap[tx.method] || tx.method}
+                                  {tx.notes ? ` · ${tx.notes}` : ''}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="nu-tx-right">
+                              <div className="nu-tx-amount-col">
+                                <strong className={`nu-tx-amount ${isInc ? 'amount-positive' : ''}`}>
+                                  {isInc ? '+ ' : '- '}
+                                  {formatCurrency(tx.amount, hide)}
+                                </strong>
+                                <span className="nu-tx-date">{formatFriendlyDate(tx.date)}</span>
+                              </div>
+                              <div className="nu-tx-actions">
+                                <button className="nu-text-btn" onClick={() => openTxModal(tx.type, tx)}>Editar</button>
+                                <button
+                                  className="nu-text-btn btn-del"
+                                  onClick={() => setTransactions((p) => p.filter((i) => i.id !== tx.id))}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
+              ) : (
+                <section className="nu-card nu-list-card">
+                  <div className="nu-list-header">
+                    <div>
+                      <h2 className="nu-section-title">Meus limites por categoria</h2>
+                      <p className="nu-section-sub">Clique no valor limite de qualquer categoria para ajustar sua meta</p>
+                    </div>
+                  </div>
+                  <div className="nu-budget-grid">
+                    {DEFAULT_CATEGORIES.filter((c) => c.type === 'expense').map((cat) => {
+                      const spent = monthTransactions
+                        .filter((t) => t.type === 'expense' && t.category === cat.id)
+                        .reduce((a, b) => a + Number(b.amount), 0);
+                      const limit = Number(budgets[cat.id] ?? cat.defaultLimit);
+                      const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
+                      const isOver = limit > 0 && spent > limit;
+
+                      return (
+                        <div key={cat.id} className="nu-budget-card">
+                          <div className="nu-budget-top">
+                            <strong className="nu-budget-name">{cat.label}</strong>
+                            {editingCatId === cat.id ? (
+                              <input
+                                type="number"
+                                className="nu-inline-input"
+                                value={draftLimit}
+                                autoFocus
+                                onChange={(e) => setDraftLimit(e.target.value)}
+                                onBlur={() => {
+                                  const v = parseFloat(draftLimit);
+                                  if (!Number.isNaN(v) && v >= 0) {
+                                    setBudgets((p) => ({ ...p, [cat.id]: v }));
+                                  }
+                                  setEditingCatId(null);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') e.target.blur();
+                                }}
+                              />
+                            ) : (
+                              <button
+                                className="nu-limit-edit-btn"
+                                onClick={() => {
+                                  setEditingCatId(cat.id);
+                                  setDraftLimit(String(limit));
+                                }}
+                              >
+                                Meta: {formatCurrency(limit, hide)} ✎
+                              </button>
+                            )}
+                          </div>
+                          <div className="nu-progress-track">
+                            <div className={`nu-progress-fill ${isOver ? 'fill-over' : ''}`} style={{ width: `${pct}%` }} />
+                          </div>
+                          <div className="nu-budget-foot">
+                            <span>Gasto: {formatCurrency(spent, hide)}</span>
+                            <span className={isOver ? 'text-over' : ''}>
+                              {isOver
+                                ? `Passou ${formatCurrency(spent - limit, hide)}`
+                                : `Disponível ${formatCurrency(Math.max(0, limit - spent), hide)}`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </main>
+
+            {isTxModalOpen && (
+              <div className="nu-modal-backdrop" onClick={() => setIsTxModalOpen(false)}>
+                <div className="nu-modal-sheet" onClick={(e) => e.stopPropagation()}>
+                  <div className="nu-modal-top">
+                    <h3>{editingTx ? 'Editar lançamento' : 'Nova movimentação'}</h3>
+                    <button className="nu-close-x" onClick={() => setIsTxModalOpen(false)}>×</button>
+                  </div>
+                  <form onSubmit={handleSaveTx} className="nu-form">
+                    <div className="nu-segment">
+                      <button
+                        type="button"
+                        className={formType === 'expense' ? 'active' : ''}
+                        onClick={() => {
+                          setFormType('expense');
+                          setFormCat('mercado');
+                        }}
+                      >
+                        Saída (Gasto)
+                      </button>
+                      <button
+                        type="button"
+                        className={formType === 'income' ? 'active' : ''}
+                        onClick={() => {
+                          setFormType('income');
+                          setFormCat('salario');
+                        }}
+                      >
+                        Entrada (Receita)
+                      </button>
+                    </div>
+                    <div className="nu-field">
+                      <label>Qual foi o valor?</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        placeholder="R$ 0,00"
+                        className="nu-big-input"
+                        value={formAmount}
+                        onChange={(e) => setFormAmount(e.target.value)}
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    <div className="nu-field">
+                      <label>Descrição</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: Mercado, Aluguel, Salário..."
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="nu-row-2">
+                      <div className="nu-field">
+                        <label>Categoria</label>
+                        <select value={formCat} onChange={(e) => setFormCat(e.target.value)}>
+                          {DEFAULT_CATEGORIES.filter((c) => c.type === formType).map((c) => (
+                            <option key={c.id} value={c.id}>{c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="nu-field">
+                        <label>Forma de pagamento</label>
+                        <select value={formMethod} onChange={(e) => setFormMethod(e.target.value)}>
+                          {PAYMENT_METHODS.map((m) => (
+                            <option key={m.id} value={m.id}>{m.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="nu-row-2">
+                      <div className="nu-field">
+                        <label>Data</label>
+                        <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} required />
+                      </div>
+                      <div className="nu-field">
+                        <label>Observação (opcional)</label>
+                        <input type="text" placeholder="Ex: Parcela 1/2" value={formNotes} onChange={(e) => setFormNotes(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="nu-modal-actions">
+                      <button type="button" className="nu-btn-light" onClick={() => setIsTxModalOpen(false)}>Cancelar</button>
+                      <button type="submit" className="nu-btn-dark">Salvar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {isProfileOpen && (
+              <div className="nu-modal-backdrop" onClick={() => setIsProfileOpen(false)}>
+                <div className="nu-modal-sheet" onClick={(e) => e.stopPropagation()}>
+                  <div className="nu-modal-top">
+                    <h3>Minhas informações</h3>
+                    <button className="nu-close-x" onClick={() => setIsProfileOpen(false)}>×</button>
+                  </div>
+                  <form onSubmit={handleSaveProfile} className="nu-form">
+                    <div className="nu-field">
+                      <label>Seu nome</label>
+                      <input type="text" value={profName} onChange={(e) => setProfName(e.target.value)} required />
+                    </div>
+                    <div className="nu-field">
+                      <label>Sua renda fixa / salário mensal (R$)</label>
+                      <input type="number" step="0.01" min="0" value={profIncome} onChange={(e) => setProfIncome(e.target.value)} />
+                      <small className="nu-field-hint">
+                        Se você ainda não tiver lançado entradas no mês, usamos esse valor para calcular seu saldo.
+                      </small>
+                    </div>
+                    <div className="nu-row-2">
+                      <div className="nu-field">
+                        <label>Dinheiro guardado / Caixinha (R$)</label>
+                        <input type="number" step="0.01" min="0" value={profSavings} onChange={(e) => setProfSavings(e.target.value)} />
+                      </div>
+                      <div className="nu-field">
+                        <label>Limite do cartão de crédito (R$)</label>
+                        <input type="number" step="0.01" min="0" value={profCardLimit} onChange={(e) => setProfCardLimit(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="nu-modal-actions">
+                      <button type="button" className="nu-btn-light" onClick={() => setIsProfileOpen(false)}>Fechar</button>
+                      <button type="submit" className="nu-btn-dark">Salvar meus dados</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>

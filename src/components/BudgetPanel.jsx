@@ -12,26 +12,30 @@ export function BudgetPanel({
   budgets,
   hideValues,
   onUpdateBudget,
+  onRemoveBudget,
 }) {
   const [editingCatId, setEditingCatId] = useState(null);
   const [draftFormatted, setDraftFormatted] = useState('');
 
   const expenseCategories = DEFAULT_CATEGORIES.filter(
-    (c) => c.type === 'expense'
+    (c) => c.type === 'saida'
   );
 
   const spentByCategory = {};
   transactions.forEach((tx) => {
-    if (tx.type === 'expense') {
-      spentByCategory[tx.category] =
-        (spentByCategory[tx.category] || 0) + Number(tx.amount);
+    if (tx.tipo === 'saida') {
+      const catKey = tx.categoria || 'Geral';
+      spentByCategory[catKey] =
+        (spentByCategory[catKey] || 0) + Number(tx.valor);
     }
   });
 
   const commitEdit = (catId) => {
     const parsed = parseCurrencyInput(draftFormatted);
-    if (parsed >= 0) {
+    if (parsed > 0) {
       onUpdateBudget(catId, parsed);
+    } else if (parsed === 0 && onRemoveBudget) {
+      onRemoveBudget(catId);
     }
     setEditingCatId(null);
   };
@@ -40,9 +44,9 @@ export function BudgetPanel({
     <section className="nu-card nu-list-card">
       <div className="nu-list-header">
         <div>
-          <h2 className="nu-section-title">Meus limites por categoria</h2>
+          <h2 className="nu-section-title">Limites por categoria</h2>
           <p className="nu-section-sub">
-            Clique no valor da meta de qualquer categoria para ajustar seu limite
+            Clique no valor da meta de qualquer categoria para ajustar seu limite mensal
           </p>
         </div>
       </div>

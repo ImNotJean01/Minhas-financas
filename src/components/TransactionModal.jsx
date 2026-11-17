@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   DEFAULT_CATEGORIES,
-  PAYMENT_METHODS,
   getCurrentTimeHHMM,
 } from '../data/constants';
 import {
@@ -18,27 +17,24 @@ export function TransactionModal({
   onSave,
   editingTransaction,
   defaultMonth,
-  initialType = 'expense',
+  initialType = 'saida',
 }) {
-  const [type, setType] = useState('expense');
-  const [description, setDescription] = useState('');
+  const [tipo, setTipo] = useState('saida');
+  const [descricao, setDescricao] = useState('');
   const [amountFormatted, setAmountFormatted] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [category, setCategory] = useState('mercado');
-  const [method, setMethod] = useState('pix');
-  const [notes, setNotes] = useState('');
+  const [categoria, setCategoria] = useState('Mercado');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingTransaction) {
-      setType(editingTransaction.type);
-      setDescription(editingTransaction.description);
-      setAmountFormatted(numberToCurrencyInput(editingTransaction.amount));
+      setTipo(editingTransaction.tipo || 'saida');
+      setDescricao(editingTransaction.descricao || '');
+      setAmountFormatted(numberToCurrencyInput(editingTransaction.valor));
       setDate(editingTransaction.date);
       setTime(editingTransaction.time || getCurrentTimeHHMM());
-      setCategory(editingTransaction.category);
-      setMethod(editingTransaction.method || 'pix');
-      setNotes(editingTransaction.notes || '');
+      setCategoria(editingTransaction.categoria || 'Geral');
     } else {
       const now = new Date();
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
@@ -48,25 +44,23 @@ export function TransactionModal({
       const initialDate = today.startsWith(defaultMonth)
         ? today
         : `${defaultMonth}-01`;
-      setType(initialType);
-      setDescription('');
+      setTipo(initialType);
+      setDescricao('');
       setAmountFormatted('');
       setDate(initialDate);
       setTime(getCurrentTimeHHMM());
-      setCategory(initialType === 'income' ? 'salario' : 'mercado');
-      setMethod('pix');
-      setNotes('');
+      setCategoria(initialType === 'recebimento' ? 'Salário' : 'Mercado');
     }
   }, [editingTransaction, defaultMonth, initialType, isOpen]);
 
   if (!isOpen) return null;
 
-  const filteredCategories = DEFAULT_CATEGORIES.filter((c) => c.type === type);
+  const filteredCategories = DEFAULT_CATEGORIES.filter((c) => c.type === tipo);
 
   const handleTypeSwitch = (newType) => {
-    setType(newType);
+    setTipo(newType);
     const firstCat = DEFAULT_CATEGORIES.find((c) => c.type === newType);
-    if (firstCat) setCategory(firstCat.id);
+    if (firstCat) setCategoria(firstCat.id);
   };
 
   const handleAmountChange = (e) => {
@@ -93,28 +87,33 @@ export function TransactionModal({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const numericAmount = parseCurrencyInput(amountFormatted);
-    if (!description.trim() || numericAmount <= 0) {
+    if (!descricao.trim() || numericAmount <= 0) {
       return;
     }
 
-    onSave({
-      id: editingTransaction ? editingTransaction.id : `tx-${Date.now()}`,
-      type,
-      description: description.trim(),
-      amount: numericAmount,
-      date,
-      time: time || getCurrentTimeHHMM(),
-      category,
-      method,
-      notes: notes.trim(),
-    });
-    onClose();
+    const hhmm = time || getCurrentTimeHHMM();
+    const isoTimestamp = new Date(`${date}T${hhmm}:00`).toISOString();
+
+    setSaving(true);
+    try {
+      await onSave({
+        id: editingTransaction ? editingTransaction.id : undefined,
+        tipo,
+        descricao: descricao.trim(),
+        valor: numericAmount,
+        categoria: categoria || 'Geral',
+        data_movimentacao: isoTimestamp,
+      });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const isIncome = type === 'income';
+  const isIncome = tipo === 'recebimento';
 
   return (
     <div className="nu-modal-backdrop" onClick={onClose}>
@@ -127,10 +126,10 @@ export function TransactionModal({
         <div className="nu-modal-top">
           <h3>
             {editingTransaction
-              ? 'Editar lançamento'
+              ? 'Editar movimentação'
               : isIncome
-              ? 'Registrar recebimento'
-              : 'Registrar saída'}
+              ? 'Novo recebimento'
+              : 'Nova saída'}
           </h3>
           <button type="button" className="nu-close-x" onClick={onClose}>
             ×
@@ -141,17 +140,17 @@ export function TransactionModal({
           <div className="nu-segment">
             <button
               type="button"
-              className={type === 'income' ? 'active-in' : ''}
-              onClick={() => handleTypeSwitch('income')}
+              className={tipo === 'recebimento' ? 'active-in' : ''}
+              onClick={() => handleTypeSwitch('recebimento')}
             >
-              ↓ Recebimento (Entrada)
+              ↓ Recebimento
             </button>
             <button
               type="button"
-              className={type === 'expense' ? 'active-out' : ''}
-              onClick={() => handleTypeSwitch('expense')}
+              className={tipo === 'saida' ? 'active-out' : ''}
+              onClick={() => handleTypeSwitch('saida')}
             >
-              ↑ Saída (Gasto)
+              ↑ Saída
             </button>
           </div>
 
@@ -212,13 +211,12 @@ export function TransactionModal({
                   ? 'Ex: Salário, Pix recebido, Freelance...'
                   : 'Ex: Mercado, Aluguel, Uber, Lanche...'
               }
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
               required
             />
           </div>
 
-          {/* Data e Hora com atalhos rápidos */}
           <div className="nu-datetime-block">
             <div className="nu-datetime-top">
               <span className="nu-datetime-label">Data e horário</span>
@@ -260,44 +258,18 @@ export function TransactionModal({
             </div>
           </div>
 
-          <div className="nu-row-2">
-            <div className="nu-field">
-              <label>Categoria</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {filteredCategories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="nu-field">
-              <label>Forma de pagamento</label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-              >
-                {PAYMENT_METHODS.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className="nu-field">
-            <label>Observação (opcional)</label>
-            <input
-              type="text"
-              placeholder="Ex: Parcela 1/2, pago via app..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
+            <label>Categoria</label>
+            <select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+            >
+              {filteredCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="nu-modal-actions">
@@ -306,9 +278,14 @@ export function TransactionModal({
             </button>
             <button
               type="submit"
+              disabled={saving}
               className={isIncome ? 'nu-btn-income' : 'nu-btn-dark'}
             >
-              {isIncome ? 'Confirmar recebimento' : 'Confirmar saída'}
+              {saving
+                ? 'Salvando...'
+                : isIncome
+                ? 'Confirmar recebimento'
+                : 'Confirmar saída'}
             </button>
           </div>
         </form>

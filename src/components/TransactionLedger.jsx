@@ -1,5 +1,4 @@
 import React from 'react';
-import { DEFAULT_CATEGORIES, PAYMENT_METHODS } from '../data/constants';
 import {
   formatCurrency,
   formatFriendlyDate,
@@ -8,8 +7,7 @@ import {
 
 export function TransactionLedger({
   transactions,
-  profile,
-  onUpdateProfile,
+  hideValues,
   searchQuery,
   onSearchChange,
   typeFilter,
@@ -18,19 +16,7 @@ export function TransactionLedger({
   onEditTransaction,
   onOpenNewModal,
 }) {
-  const hideValues = profile.hideValues;
-  const dateFormat = profile.dateFormat || 'relative';
-  const showTime = profile.showTime !== false;
-  const numberScale = profile.numberScale || 'comfortable';
-
-  const categoryMap = Object.fromEntries(
-    DEFAULT_CATEGORIES.map((c) => [c.id, c])
-  );
-  const methodMap = Object.fromEntries(
-    PAYMENT_METHODS.map((m) => [m.id, m.label])
-  );
-
-  // Agrupa transações por data para leitura muito mais clara
+  // Agrupa transações por data local (YYYY-MM-DD)
   const groupedByDate = [];
   transactions.forEach((tx) => {
     const lastGroup = groupedByDate[groupedByDate.length - 1];
@@ -44,39 +30,13 @@ export function TransactionLedger({
     }
   });
 
-  const cycleDateFormat = () => {
-    const order = ['relative', 'numeric', 'short'];
-    const next = order[(order.indexOf(dateFormat) + 1) % order.length];
-    onUpdateProfile({ ...profile, dateFormat: next });
-  };
-
-  const cycleNumberScale = () => {
-    const order = ['normal', 'comfortable', 'large'];
-    const next = order[(order.indexOf(numberScale) + 1) % order.length];
-    onUpdateProfile({ ...profile, numberScale: next });
-  };
-
-  const dateFormatLabel =
-    dateFormat === 'relative'
-      ? 'Data: Hoje / Dia'
-      : dateFormat === 'numeric'
-      ? 'Data: 17/11/2026'
-      : 'Data: 17 de nov.';
-
-  const scaleLabel =
-    numberScale === 'large'
-      ? 'Números: Grandes'
-      : numberScale === 'comfortable'
-      ? 'Números: Médios'
-      : 'Números: Compactos';
-
   return (
     <section className="nu-card nu-list-card">
       <div className="nu-list-header">
         <div>
           <h2 className="nu-section-title">Histórico de movimentações</h2>
           <p className="nu-section-sub">
-            Acompanhe cada recebimento e saída com data e horário
+            Acompanhe cada recebimento e saída sincronizados na sua conta
           </p>
         </div>
 
@@ -99,52 +59,19 @@ export function TransactionLedger({
             </button>
             <button
               type="button"
-              className={typeFilter === 'income' ? 'active' : ''}
-              onClick={() => onTypeFilterChange('income')}
+              className={typeFilter === 'recebimento' ? 'active' : ''}
+              onClick={() => onTypeFilterChange('recebimento')}
             >
               Recebimentos
             </button>
             <button
               type="button"
-              className={typeFilter === 'expense' ? 'active' : ''}
-              onClick={() => onTypeFilterChange('expense')}
+              className={typeFilter === 'saida' ? 'active' : ''}
+              onClick={() => onTypeFilterChange('saida')}
             >
               Saídas
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Barra rápida de ajuste de visualização (Datas, Horas e Tamanho dos Números) */}
-      <div className="nu-display-bar">
-        <span className="nu-display-bar-label">Visualização rápida:</span>
-        <div className="nu-display-chips">
-          <button
-            type="button"
-            className="nu-chip-btn"
-            onClick={cycleDateFormat}
-            title="Clique para alternar o modelo de data"
-          >
-            📅 {dateFormatLabel}
-          </button>
-
-          <button
-            type="button"
-            className={`nu-chip-btn ${showTime ? 'chip-active' : ''}`}
-            onClick={() => onUpdateProfile({ ...profile, showTime: !showTime })}
-            title="Mostrar ou ocultar o horário de cada lançamento"
-          >
-            🕒 {showTime ? 'Horário: Visível' : 'Horário: Oculto'}
-          </button>
-
-          <button
-            type="button"
-            className="nu-chip-btn"
-            onClick={cycleNumberScale}
-            title="Clique para ajustar o tamanho dos números"
-          >
-            🔢 {scaleLabel}
-          </button>
         </div>
       </div>
 
@@ -158,14 +85,14 @@ export function TransactionLedger({
             <button
               type="button"
               className="nu-btn-income"
-              onClick={() => onOpenNewModal('income')}
+              onClick={() => onOpenNewModal('recebimento')}
             >
               + Registrar recebimento
             </button>
             <button
               type="button"
               className="nu-btn-dark"
-              onClick={() => onOpenNewModal('expense')}
+              onClick={() => onOpenNewModal('saida')}
             >
               - Registrar saída
             </button>
@@ -176,7 +103,10 @@ export function TransactionLedger({
           {groupedByDate.map((group) => {
             const dayNet = group.items.reduce(
               (acc, t) =>
-                acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)),
+                acc +
+                (t.tipo === 'recebimento'
+                  ? Number(t.valor)
+                  : -Number(t.valor)),
               0
             );
 
@@ -184,7 +114,7 @@ export function TransactionLedger({
               <div key={group.date} className="nu-date-group">
                 <div className="nu-date-group-header">
                   <span className="nu-date-group-title">
-                    {formatFriendlyDate(group.date, dateFormat)}
+                    {formatFriendlyDate(group.date, 'relative')}
                   </span>
                   <span className="nu-date-group-sum">
                     Saldo do dia:{' '}
@@ -197,10 +127,7 @@ export function TransactionLedger({
 
                 <ul className="nu-tx-list">
                   {group.items.map((tx) => {
-                    const cat = categoryMap[tx.category] || {
-                      label: tx.category,
-                    };
-                    const isIncome = tx.type === 'income';
+                    const isIncome = tx.tipo === 'recebimento';
 
                     return (
                       <li key={tx.id} className="nu-tx-item">
@@ -215,7 +142,7 @@ export function TransactionLedger({
                           <div className="nu-tx-info">
                             <div className="nu-tx-title-row">
                               <strong className="nu-tx-title">
-                                {tx.description}
+                                {tx.descricao}
                               </strong>
                               <span
                                 className={`nu-type-pill ${
@@ -226,8 +153,7 @@ export function TransactionLedger({
                               </span>
                             </div>
                             <span className="nu-tx-meta">
-                              {cat.label} · {methodMap[tx.method] || tx.method}
-                              {tx.notes ? ` · ${tx.notes}` : ''}
+                              {tx.categoria || 'Geral'}
                             </span>
                           </div>
                         </div>
@@ -240,13 +166,13 @@ export function TransactionLedger({
                               }`}
                             >
                               {isIncome ? '+ ' : '- '}
-                              {formatCurrency(tx.amount, hideValues)}
+                              {formatCurrency(tx.valor, hideValues)}
                             </strong>
                             <span className="nu-tx-datetime">
                               <span>
                                 {formatFriendlyDate(tx.date, 'numeric')}
                               </span>
-                              {showTime && tx.time && (
+                              {tx.time && (
                                 <>
                                   <span className="nu-dot-sep">·</span>
                                   <span className="nu-tx-time-badge">

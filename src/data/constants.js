@@ -1,23 +1,15 @@
 export const DEFAULT_CATEGORIES = [
-  { id: 'moradia', label: 'Moradia', type: 'expense', defaultLimit: 1800 },
-  { id: 'mercado', label: 'Mercado', type: 'expense', defaultLimit: 900 },
-  { id: 'alimentacao', label: 'Restaurantes & Delivery', type: 'expense', defaultLimit: 450 },
-  { id: 'transporte', label: 'Transporte', type: 'expense', defaultLimit: 400 },
-  { id: 'assinaturas', label: 'Assinaturas & Contas', type: 'expense', defaultLimit: 250 },
-  { id: 'saude', label: 'Saúde & Farmácia', type: 'expense', defaultLimit: 300 },
-  { id: 'lazer', label: 'Lazer & Compras', type: 'expense', defaultLimit: 500 },
-  { id: 'outros_saida', label: 'Outros gastos', type: 'expense', defaultLimit: 300 },
-  { id: 'salario', label: 'Salário', type: 'income', defaultLimit: 0 },
-  { id: 'extra', label: 'Renda Extra / Freelance', type: 'income', defaultLimit: 0 },
-  { id: 'rendimentos', label: 'Rendimentos', type: 'income', defaultLimit: 0 },
-];
-
-export const PAYMENT_METHODS = [
-  { id: 'pix', label: 'Pix' },
-  { id: 'credito', label: 'Cartão de crédito' },
-  { id: 'debito', label: 'Cartão de débito' },
-  { id: 'boleto', label: 'Boleto / Conta' },
-  { id: 'dinheiro', label: 'Dinheiro' },
+  { id: 'Moradia', label: 'Moradia', type: 'saida', defaultLimit: 1800 },
+  { id: 'Mercado', label: 'Mercado', type: 'saida', defaultLimit: 900 },
+  { id: 'Restaurantes & Delivery', label: 'Restaurantes & Delivery', type: 'saida', defaultLimit: 450 },
+  { id: 'Transporte', label: 'Transporte', type: 'saida', defaultLimit: 400 },
+  { id: 'Assinaturas & Contas', label: 'Assinaturas & Contas', type: 'saida', defaultLimit: 250 },
+  { id: 'Saúde & Farmácia', label: 'Saúde & Farmácia', type: 'saida', defaultLimit: 300 },
+  { id: 'Lazer & Compras', label: 'Lazer & Compras', type: 'saida', defaultLimit: 500 },
+  { id: 'Geral', label: 'Geral / Outros gastos', type: 'saida', defaultLimit: 300 },
+  { id: 'Salário', label: 'Salário', type: 'recebimento', defaultLimit: 0 },
+  { id: 'Renda Extra / Freelance', label: 'Renda Extra / Freelance', type: 'recebimento', defaultLimit: 0 },
+  { id: 'Rendimentos', label: 'Rendimentos', type: 'recebimento', defaultLimit: 0 },
 ];
 
 export function getCurrentYearMonth() {
@@ -36,21 +28,17 @@ export function getCurrentTimeHHMM() {
 
 export function generateDefaultProfile() {
   return {
-    name: 'Jean',
-    monthlyIncomeGoal: 0,
-    savingsBox: 0,
-    creditCardLimit: 2500,
-    hideValues: false,
-    dateFormat: 'relative', // 'relative' | 'short' | 'numeric'
-    showTime: true,
-    numberScale: 'comfortable', // 'normal' | 'comfortable' | 'large'
+    nome: 'Jean',
+    fatura_atual: 0,
+    limite_cartao: 2500,
+    saldo_caixinha: 0,
   };
 }
 
 export function generateDefaultBudgets() {
   const map = {};
   DEFAULT_CATEGORIES.forEach((cat) => {
-    if (cat.type === 'expense') {
+    if (cat.type === 'saida') {
       map[cat.id] = cat.defaultLimit;
     }
   });

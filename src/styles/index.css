@@ -1266,6 +1266,120 @@ button {
   font-weight: 600;
 }
 
+/* Botão de Logout no Header */
+.nu-logout-btn {
+  background-color: var(--black-soft);
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s;
+}
+
+.nu-logout-btn:hover {
+  background-color: #2e2e2e;
+}
+
+.nu-sync-pill {
+  align-self: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  padding: 0 12px;
+}
+
+/* Tela de Login / Cadastro (Supabase Auth Gate) */
+.nu-auth-page {
+  min-height: 100vh;
+  background-color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.nu-auth-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--white);
+  color: var(--black);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nu-auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nu-auth-logo {
+  background-color: var(--black);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.nu-auth-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.nu-auth-subtitle {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.nu-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nu-alert-error {
+  background-color: var(--red-bg);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+}
+
+.nu-alert-info {
+  background-color: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.nu-btn-full {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.nu-auth-footer {
+  border-top: 1px solid var(--gray-100);
+  padding-top: 12px;
+  text-align: center;
+}
+
+.nu-link-muted {
+  background: transparent;
+  border: none;
+  color: var(--gray-600);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.nu-link-muted:hover {
+  color: var(--black);
+}
+
 @media (max-width: 760px) {
   .nu-summary-section {
     grid-template-columns: 1fr;

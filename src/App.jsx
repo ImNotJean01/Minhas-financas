@@ -333,12 +333,23 @@ export default function App() {
       .eq('categoria', categoria);
   };
 
+  const resetLocalState = useCallback(() => {
+    setProfile(generateDefaultProfile);
+    setTransactions([]);
+    setBudgets(generateDefaultBudgets);
+    setSearchQuery('');
+    setTypeFilter('all');
+    setIsTxModalOpen(false);
+    setIsSettingsModalOpen(false);
+  }, []);
+
   const handleLogout = async () => {
     const client = getSupabaseClient();
     if (client) {
       await client.auth.signOut();
     }
     setSession(null);
+    resetLocalState();
   };
 
   if (authChecking) {

@@ -1,13 +1,34 @@
 import React, { useState } from 'react';
-import {
-  getSupabaseCredentials,
-  saveSupabaseCredentials,
-  getSupabaseClient,
-} from '../lib/supabase';
+import { getSupabaseClient } from '../lib/supabase';
+
+function mapAuthErrorMessage(err, isSignUp) {
+  const msg = String(err?.message || '').toLowerCase();
+
+  if (msg.includes('invalid login credentials')) {
+    return 'E-mail ou senha inválidos.';
+  }
+  if (msg.includes('email not confirmed')) {
+    return 'Confirme seu e-mail antes de entrar.';
+  }
+  if (msg.includes('user already registered')) {
+    return 'Este e-mail já está cadastrado. Tente entrar na sua conta.';
+  }
+  if (msg.includes('password should be at least')) {
+    return 'A senha deve ter pelo menos 6 caracteres.';
+  }
+  if (msg.includes('rate limit') || msg.includes('too many requests')) {
+    return 'Muitas tentativas seguidas. Aguarde alguns instantes e tente novamente.';
+  }
+  if (msg.includes('signups not allowed')) {
+    return 'Novos cadastros estão desativados no momento.';
+  }
+
+  return isSignUp
+    ? 'Não foi possível criar a conta. Verifique os dados informados.'
+    : 'Não foi possível entrar. Verifique seu e-mail e senha.';
+}
 
 export function AuthScreen({ onAuthenticated }) {
-  const initialCreds = getSupabaseCredentials();
-
   const [isSignUp, setIsSignUp] = useState(false);
   const [nome, setNome] = useState('Jean');
   const [email, setEmail] = useState('');
@@ -16,25 +37,6 @@ export function AuthScreen({ onAuthenticated }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
 
-  // Caso as variáveis VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY ainda não estejam no .env
-  const [showConfig, setShowConfig] = useState(!initialCreds.isConfigured);
-  const [supabaseUrl, setSupabaseUrl] = useState(initialCreds.url);
-  const [supabaseAnonKey, setSupabaseAnonKey] = useState(initialCreds.anonKey);
-
-  const handleSaveConfig = (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-    if (!supabaseUrl.trim().startsWith('http') || !supabaseAnonKey.trim()) {
-      setErrorMsg(
-        'Informe uma URL válida (https://...) e a Anon Key pública do seu projeto Supabase.'
-      );
-      return;
-    }
-    saveSupabaseCredentials(supabaseUrl, supabaseAnonKey);
-    setShowConfig(false);
-    setInfoMsg('Conexão Supabase salva! Agora você pode entrar ou criar sua conta.');
-  };
-
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -42,8 +44,7 @@ export function AuthScreen({ onAuthenticated }) {
 
     const client = getSupabaseClient();
     if (!client) {
-      setShowConfig(true);
-      setErrorMsg('Configure primeiro a URL e a Anon Key do Supabase.');
+      setErrorMsg('Serviço de autenticação indisponível no momento.');
       return;
     }
 
@@ -83,7 +84,7 @@ export function AuthScreen({ onAuthenticated }) {
         }
       }
     } catch (err) {
-      setErrorMsg(err?.message || 'Não foi possível autenticar no Supabase.');
+      setErrorMsg(mapAuthErrorMessage(err, isSignUp));
     } finally {
       setLoading(false);
     }
@@ -105,140 +106,81 @@ export function AuthScreen({ onAuthenticated }) {
         {errorMsg && <div className="nu-alert nu-alert-error">{errorMsg}</div>}
         {infoMsg && <div className="nu-alert nu-alert-info">{infoMsg}</div>}
 
-        {showConfig ? (
-          <form onSubmit={handleSaveConfig} className="nu-form">
-            <div className="nu-field">
-              <label>Supabase Project URL</label>
-              <input
-                type="url"
-                placeholder="https://seu-projeto.supabase.co"
-                value={supabaseUrl}
-                onChange={(e) => setSupabaseUrl(e.target.value)}
-                required
-              />
-            </div>
+        <div className="nu-segment">
+          <button
+            type="button"
+            className={!isSignUp ? 'active-out' : ''}
+            onClick={() => {
+              setIsSignUp(false);
+              setErrorMsg('');
+              setInfoMsg('');
+            }}
+          >
+            Entrar
+          </button>
+          <button
+            type="button"
+            className={isSignUp ? 'active-out' : ''}
+            onClick={() => {
+              setIsSignUp(true);
+              setErrorMsg('');
+              setInfoMsg('');
+            }}
+          >
+            Criar conta
+          </button>
+        </div>
 
+        <form onSubmit={handleAuthSubmit} className="nu-form">
+          {isSignUp && (
             <div className="nu-field">
-              <label>Supabase Anon Key (Public)</label>
+              <label>Seu nome</label>
               <input
                 type="text"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                value={supabaseAnonKey}
-                onChange={(e) => setSupabaseAnonKey(e.target.value)}
+                placeholder="Jean"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 required
               />
-              <small className="nu-field-hint">
-                Você também pode definir <code>VITE_SUPABASE_URL</code> e{' '}
-                <code>VITE_SUPABASE_ANON_KEY</code> no arquivo <code>.env</code>.
-              </small>
             </div>
+          )}
 
-            <div className="nu-modal-actions">
-              {initialCreds.isConfigured && (
-                <button
-                  type="button"
-                  className="nu-btn-light"
-                  onClick={() => setShowConfig(false)}
-                >
-                  Voltar
-                </button>
-              )}
-              <button type="submit" className="nu-btn-dark nu-btn-full">
-                Salvar conexão Supabase
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <div className="nu-segment">
-              <button
-                type="button"
-                className={!isSignUp ? 'active-out' : ''}
-                onClick={() => {
-                  setIsSignUp(false);
-                  setErrorMsg('');
-                  setInfoMsg('');
-                }}
-              >
-                Entrar
-              </button>
-              <button
-                type="button"
-                className={isSignUp ? 'active-out' : ''}
-                onClick={() => {
-                  setIsSignUp(true);
-                  setErrorMsg('');
-                  setInfoMsg('');
-                }}
-              >
-                Criar conta
-              </button>
-            </div>
+          <div className="nu-field">
+            <label>E-mail</label>
+            <input
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+            />
+          </div>
 
-            <form onSubmit={handleAuthSubmit} className="nu-form">
-              {isSignUp && (
-                <div className="nu-field">
-                  <label>Seu nome</label>
-                  <input
-                    type="text"
-                    placeholder="Jean"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
+          <div className="nu-field">
+            <label>Senha</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-              <div className="nu-field">
-                <label>E-mail</label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </div>
-
-              <div className="nu-field">
-                <label>Senha</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="nu-btn-dark nu-btn-full"
-                disabled={loading}
-              >
-                {loading
-                  ? 'Aguarde...'
-                  : isSignUp
-                  ? 'Criar minha conta'
-                  : 'Entrar'}
-              </button>
-            </form>
-
-            {!initialCreds.fromEnv && (
-              <div className="nu-auth-footer">
-                <button
-                  type="button"
-                  className="nu-link-muted"
-                  onClick={() => setShowConfig(true)}
-                >
-                  Configurar URL / Chave do Supabase
-                </button>
-              </div>
-            )}
-          </>
-        )}
+          <button
+            type="submit"
+            className="nu-btn-dark nu-btn-full"
+            disabled={loading}
+          >
+            {loading
+              ? 'Aguarde...'
+              : isSignUp
+              ? 'Criar minha conta'
+              : 'Entrar'}
+          </button>
+        </form>
       </div>
     </div>
   );

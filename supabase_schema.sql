@@ -49,7 +49,11 @@ create policy "Usuário gerencia próprios limites"
 
 -- Trigger automática para criar o perfil padrão no primeiro cadastro
 create or replace function public.criar_perfil_financeiro_padrao()
-returns trigger language plpgsql security definer as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
   insert into public.perfis_financeiros (user_id, nome, fatura_atual, limite_cartao, saldo_caixinha)
   values (new.id, coalesce(new.raw_user_meta_data->>'nome', 'Jean'), 0.00, 2500.00, 0.00)
